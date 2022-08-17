@@ -2,103 +2,173 @@
   <div>
     <NavBarMarket />
 
-    <main class="conteudo-main container">
-      <div
-        class="container conteudo-header d-flex justify-content-between align-items-center border-bottom"
-      >
-        <div>
-          <h2>Market</h2>
-          <p>Shop the best products.</p>
-        </div>
-
-        <div class="action-produto">
-          <strong v-b-toggle.sidebar-right
-            >{{ total | numeroPreco }} <b-icon icon="cart"></b-icon
-          ></strong>
-        </div>
-
-        <b-sidebar id="sidebar-right" title="Carrinho" right shadow>
-          <div class="px-3 py-2">
-            <p>
-              Cras mattis consectetur purus sit amet fermentum. Cras justo odio,
-              dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta
-              ac consectetur ac, vestibulum at eros.
-            </p>
-            <b-img
-              src="https://picsum.photos/500/500/?image=54"
-              fluid
-              thumbnail
-            ></b-img>
-          </div>
-        </b-sidebar>
-      </div>
-
-      <b-overlay :show="show" class="container">
+    <main class="container">
+      <div class="conteudo-main">
         <div
-          class="container conteudo-header mobile-search d-flex justify-content-between align-items-center"
+          class="container conteudo-header d-flex justify-content-between align-items-center border-bottom"
         >
           <div>
-            <h3 v-if="!search" class="h3">All Products</h3>
-            <h3 v-else class="h3">Search Results: <span class="search-text">{{ search }}</span></h3>
-            
+            <h2>Market</h2>
+            <p>Shop the best products.</p>
           </div>
 
           <div class="action-produto">
-            <b-input-group class="">
-              <b-form-input placeholder="Search..." class="search-input" v-model="search"/>
-            </b-input-group>
+            <strong v-b-toggle.sidebar-right
+              >{{ total | numeroPreco }} <b-icon icon="cart"></b-icon
+            ></strong>
           </div>
+
+          <b-sidebar id="sidebar-right" title="Cart" right shadow width="400px">
+            <div class="px-3 py-2">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6>All Products</h6>
+                <b-button
+                  @click="carrinho = []"
+                  variant="outline-danger"
+                  size="sm"
+                  class="btn-sm mb-2"
+                >
+                  Clear
+                </b-button>
+              </div>
+
+              <ul class="card-lateral-container">
+                <li
+                  v-for="(produto, index) in carrinho"
+                  :key="index"
+                  class="card-lateral-main"
+                >
+                  <div class="card-lateral">
+                    <img :src="produto.url" :alt="produto.nome" />
+                  </div>
+                  <div>
+                    <p class="overflow-hidden card-lateral-nome">
+                      {{ produto.nome }}
+                    </p>
+                    <div>{{ produto.preco | numeroPreco }}</div>
+                  </div>
+
+                  <b-iconstack
+                    @click="removerCarrinho(produto.idProduto)"
+                    class="action-produto"
+                  >
+                    <b-icon icon="trash"></b-icon>
+                  </b-iconstack>
+                </li>
+              </ul>
+              <div
+                class="d-flex justify-content-between align-items-center mt-3"
+              >
+                <h6>Total:</h6>
+                <strong>{{ total | numeroPreco }}</strong>
+              </div>
+              <div
+                class="d-flex justify-content-between align-items-center mt-3"
+              >
+                <h6>Tax 5%:</h6>
+                <strong>{{ (total * 0.05) | numeroPreco }}</strong>
+              </div>
+              <div
+                class="d-flex justify-content-between align-items-center mt-3"
+              >
+                <h6>Shipping:</h6>
+                <strong>Free</strong>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mt-3">
+                <b-button
+                  variant="success"
+                  class="buttom-buy"
+                  @click="comprarProduto"
+                >
+                   Buy <b-icon icon="arrow-right" /></b-button
+                >
+              </div>
+            </div>
+          </b-sidebar>
         </div>
 
-        <div class="card-container container">
-          <div v-for="(produto, index) in produtoFiltrado" :key="index" class="card">
-            <div class="card-body">
-              <div class="h2 mb-0">
-                <b-icon v-if="produtoFavorito(produto.id)"
-                  icon="heart-fill"
-                  class="rounded p-2 icon-heart-bg action-produto"
-                  variant="danger"
-                  @click="removerFavorito(produto.id)"
+        <b-overlay :show="show" class="container">
+          <div
+            class="container conteudo-header mobile-search d-flex justify-content-between align-items-center"
+          >
+            <div>
+              <h3 v-if="!search" class="h3">All Products</h3>
+              <h3 v-else class="h3">
+                Search Results: <span class="search-text">{{ search }}</span>
+              </h3>
+            </div>
+
+            <div class="action-produto">
+              <b-input-group class="">
+                <b-form-input
+                  placeholder="Search..."
+                  class="search-input"
+                  v-model="search"
                 />
-                <b-icon v-else
-                  icon="suit-heart"
-                  class="rounded p-2 icon-unheart-bg action-produto"
-                  @click="adicionarFavorito(produto.id)"
-                />
-              </div>
+              </b-input-group>
+            </div>
+          </div>
 
-              <div class="card-container-img">
-                <img :src="produto.image" alt="Card image cap" />
-              </div>
-
-              <div class="card-container-titulo ">
-                <p class="overflow-hidden">{{ produto.title }}</p>
-              </div>
-
-              <div class="card-container-titulo d-flex justify-content-between">
-                <div class="d-flex flex-column">
-                  <span>Price:</span>
-                  <strong>{{ produto.price | numeroPreco }}</strong>
-                </div>
+          <div class="card-container container">
+            <div
+              v-for="(produto, index) in produtoFiltrado"
+              :key="index"
+              class="card"
+            >
+              <div class="card-body">
                 <div class="h2 mb-0">
-                  <b-iconstack v-if="!produtoCarrinho(produto.id)"
-                    @click="adicionarCarrinho(produto)"
-                    class="action-produto icon-plus-bg"
-                  >
-                    <b-icon stacked icon="plus"></b-icon>
-                  </b-iconstack>
-                  <b-iconstack v-else
-                    @click="removerCarrinho(produto.id)"
-                    class="action-produto icon-check-bg"
-                  >
-                    <b-icon stacked icon="check"></b-icon>
-                  </b-iconstack>
+                  <b-icon
+                    v-if="produtoFavorito(produto.id)"
+                    icon="heart-fill"
+                    class="rounded p-2 icon-heart-bg action-produto"
+                    variant="danger"
+                    @click="removerFavorito(produto.id)"
+                  />
+                  <b-icon
+                    v-else
+                    icon="suit-heart"
+                    class="rounded p-2 icon-unheart-bg action-produto"
+                    @click="adicionarFavorito(produto.id)"
+                  />
+                </div>
+
+                <div class="card-container-img">
+                  <img :src="produto.image" alt="Card image cap" />
+                </div>
+
+                <div class="card-container-titulo">
+                  <p class="overflow-hidden">{{ produto.title }}</p>
+                </div>
+
+                <div
+                  class="card-container-titulo d-flex justify-content-between"
+                >
+                  <div class="d-flex flex-column">
+                    <span>Price:</span>
+                    <strong>{{ produto.price | numeroPreco }}</strong>
+                  </div>
+                  <div class="h2 mb-0">
+                    <b-iconstack
+                      v-if="!produtoCarrinho(produto.id)"
+                      @click="adicionarCarrinho(produto)"
+                      class="action-produto icon-plus-bg"
+                    >
+                      <b-icon stacked icon="plus"></b-icon>
+                    </b-iconstack>
+                    <b-iconstack
+                      v-else
+                      @click="removerCarrinho(produto.id)"
+                      class="action-produto icon-check-bg"
+                    >
+                      <b-icon stacked icon="check"></b-icon>
+                    </b-iconstack>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </b-overlay>
+        </b-overlay>
+      </div>
     </main>
     <div class="alerta" :class="{ ativo: alertaAtivo }">
       <p class="alerta_mensagem">{{ mensagemAlerta }}</p>
@@ -138,7 +208,7 @@ export default {
     url() {
       this.getProdutos();
     },
-    favorito(){
+    favorito() {
       window.localStorage.favorito = JSON.stringify(this.favorito);
     },
     carrinho() {
@@ -146,7 +216,6 @@ export default {
     },
   },
   filters: {
-    
     numeroPreco(valor) {
       return valor.toLocaleString("en-US", {
         style: "currency",
@@ -169,14 +238,18 @@ export default {
   },
 
   methods: {
+    comprarProduto() {
+      this.carrinho = [];
+      this.notificacao("🎉 Products purchased successfully 🎉");
+    },
     produtoCarrinho(id) {
       return this.carrinho.find((produto) => {
         return produto.idProduto == id;
       });
     },
     produtoFavorito(id) {
-      return this.favorito.find((produto) => {
-        return produto.idProduto == id;
+      return this.favorito.find((favorito) => {
+        return favorito.idProduto == id;
       });
     },
     getProdutos() {
@@ -199,7 +272,7 @@ export default {
       let position = this.posicaoCarrinho(id);
       if (position > -1) {
         this.carrinho.splice(position, 1);
-        this.notificacao("Item removido");
+        this.notificacao("Item removed");
       }
     },
     posicaoCarrinho(id) {
@@ -229,8 +302,9 @@ export default {
         idProduto: produto.id,
         nome: produto.title,
         preco: produto.price,
+        url: produto.image,
       });
-      this.notificacao(`${produto.title} adicionado ao carrinho.`);
+      this.notificacao(`${produto.title} added to cart.`);
     },
     adicionarFavorito(id) {
       this.favorito.push({
@@ -246,6 +320,43 @@ export default {
 </script>
 
 <style scoped>
+.buttom-buy {
+  width: 100%;
+  border-radius: 15px;
+  font-weight: 700;
+}
+/* CARD LATERAL */
+.card-lateral-nome {
+  height: 20px;
+  font-weight: 500;
+}
+
+.card-lateral-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.card-lateral-main {
+  display: grid;
+  grid-template-columns: 50px 1fr 10px;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  background-clip: border-box;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  padding: 10px;
+  border-radius: 0.25rem;
+}
+.card-lateral {
+  width: 50px;
+  height: 50px;
+}
+
+.card-lateral img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 /* ALERTA */
 
 .alerta {
@@ -272,16 +383,17 @@ export default {
   box-shadow: 0px 3px 4px rgba(0, 0, 0, 0.1), 0px 4px 10px rgba(0, 0, 0, 0.2);
 }
 /*Conteudo */
+
 .conteudo-main {
   border-radius: 20px;
   background: #ffffff;
   padding: 1rem;
+  margin: 0 15px;
 }
 
 .conteudo-header {
   padding: 20px 0;
 }
-
 
 /* search */
 .search-text {
@@ -289,16 +401,14 @@ export default {
   font-size: 1.2rem;
 }
 
-.search-input{
+.search-input {
   width: 25ch;
 }
 /* CARD */
 
-
 .card-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-
   gap: 1rem;
 }
 
@@ -337,13 +447,13 @@ export default {
 }
 
 /* ICONS */
-.icon-check-bg{
+.icon-check-bg {
   border-radius: 10px;
-  background: rgb(149, 255, 164);
+  background: rgb(58, 255, 84);
   color: #ffffff;
 }
 
-.icon-unheart-bg{
+.icon-unheart-bg {
   background: rgb(230, 230, 230);
 }
 .icon-heart-bg {
@@ -359,7 +469,6 @@ export default {
   .mobile-search {
     flex-direction: column-reverse;
     gap: 1rem;
-
   }
 }
 </style>
