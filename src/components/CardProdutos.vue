@@ -94,6 +94,9 @@ export default {
 </script>
 
 <style >
+.action-produto {
+  cursor: pointer;
+}
 /* CARD */
 
 .card-container {

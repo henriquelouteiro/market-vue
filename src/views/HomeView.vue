@@ -392,9 +392,7 @@ export default {
 }
 
 /* BOTOES */
-.action-produto {
-  cursor: pointer;
-}
+
 
 .input-group {
   flex-wrap: nowrap;
