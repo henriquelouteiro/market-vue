@@ -141,6 +141,9 @@ export default {
     NavBarMarket,
     CardProdutos
   },
+  created() {
+    document.title = "Market";
+  },
   data() {
     return {
       produtos: [],
