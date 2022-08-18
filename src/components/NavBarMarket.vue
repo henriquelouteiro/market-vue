@@ -1,7 +1,7 @@
 <template>
   <header class="header mb-2 header_nav">
     <nav class="navbar navbar-expand-lg d-flex flex-column justify-content-center align-items-center  "> 
-      <img class="navbar-brand" src="../assets/logo.png" alt="" width="70px" height="70px">
+     <router-link to="/"> <img class="navbar-brand" src="../assets/logo.png" alt="" width="70px" height="70px"></router-link> 
     </nav>
   </header>
 </template>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <NavBarMarket />
+
 
     <main class="container">
       <div class="conteudo-main">
@@ -23,7 +23,7 @@
               <div class="d-flex justify-content-between align-items-center">
                 <h6>All Products</h6>
                 <b-button
-                  @click="carrinho = []"
+                  @click="$store.commit('clearCarrinho')"
                   variant="outline-danger"
                   size="sm"
                   class="btn-sm mb-2"
@@ -34,7 +34,7 @@
 
               <ul class="card-lateral-container">
                 <li
-                  v-for="(produto, index) in carrinho"
+                  v-for="(produto, index) in $store.state.carrinho"
                   :key="index"
                   class="card-lateral-main"
                 >
@@ -49,7 +49,7 @@
                   </div>
 
                   <b-iconstack
-                    @click="removerCarrinho(produto.idProduto)"
+                    @click="actionCarrinho(produto, 0)"
                     class="action-produto"
                   >
                     <b-icon icon="trash"></b-icon>
@@ -74,14 +74,15 @@
                 <h6>Shipping:</h6>
                 <strong>Free</strong>
               </div>
-              <div class="d-flex justify-content-between align-items-center mt-3">
-                <b-button
-                  variant="success"
-                  class="buttom-buy"
-                  @click="comprarProduto"
-                >
-                   Buy <b-icon icon="arrow-right" /></b-button
-                >
+              <div
+                class="d-flex justify-content-between align-items-center mt-3"
+              >
+                <div></div>
+                <router-link to="/store" style="width:100%;">
+                  <b-button variant="success" class="buttom-buy">
+                    Next <b-icon icon="arrow-right"
+                  /></b-button>
+                </router-link>
               </div>
             </div>
           </b-sidebar>
@@ -115,11 +116,13 @@
               :key="index"
               class="card"
             >
-            <CardProdutos :produto="produto" 
-            :isFavorito="produtoFavorito(produto.id)" 
-            :onCarrinho="produtoCarrinho(produto.id)" 
-            @tFavorito="actionFavorito($event)"
-            @tCarrinho="actionCarrinho($event)"/>
+              <CardProdutos
+                :produto="produto"
+                :isFavorito="produtoFavorito(produto.id)"
+                :onCarrinho="produtoCarrinho(produto.id)"
+                @tFavorito="actionFavorito($event)"
+                @tCarrinho="actionCarrinho($event)"
+              />
             </div>
           </div>
         </b-overlay>
@@ -132,18 +135,15 @@
 </template>
 
 <script>
-import NavBarMarket from "@/components/NavBarMarket.vue";
+
 import CardProdutos from "@/components/CardProdutos.vue";
 
 export default {
   name: "HomeView",
   components: {
-    NavBarMarket,
-    CardProdutos
+    CardProdutos,
   },
-  created() {
-    document.title = "Market";
-  },
+  
   data() {
     return {
       produtos: [],
@@ -163,7 +163,7 @@ export default {
       this.produtoCarrinho();
     },
     remove(index) {
-      this.carrinho.splice(index, 1);
+      this.$store.state.carrinho.splice(index, 1);
     },
     url() {
       this.getProdutos();
@@ -172,7 +172,7 @@ export default {
       window.localStorage.favorito = JSON.stringify(this.favorito);
     },
     carrinho() {
-      window.localStorage.carrinho = JSON.stringify(this.carrinho);
+      window.localStorage.carrinho = JSON.stringify(this.$store.state.carrinho);
     },
   },
   filters: {
@@ -191,7 +191,7 @@ export default {
       });
     },
     total() {
-      return this.carrinho.reduce((total, produto) => {
+      return this.$store.state.carrinho.reduce((total, produto) => {
         return total + produto.preco;
       }, 0);
     },
@@ -199,11 +199,11 @@ export default {
 
   methods: {
     comprarProduto() {
-      this.carrinho = [];
+      this.$store.state.carrinho = [];
       this.notificacao("🎉 Products purchased successfully 🎉");
     },
     produtoCarrinho(id) {
-      let aux = this.carrinho.find((carrinho) => {
+      let aux = this.$store.state.carrinho.find((carrinho) => {
         return carrinho.idProduto == id;
       });
       return aux ? true : false;
@@ -224,22 +224,8 @@ export default {
         });
     },
     checarLocalStorage() {
-      if (window.localStorage.carrinho)
-        this.carrinho = JSON.parse(window.localStorage.carrinho);
       if (window.localStorage.favorito)
         this.favorito = JSON.parse(window.localStorage.favorito);
-    },
-    removerCarrinho(id) {
-      let position = this.posicaoCarrinho(id);
-      if (position > -1) {
-        this.carrinho.splice(position, 1);
-        this.notificacao("Item removed");
-      }
-    },
-    posicaoCarrinho(id) {
-      return this.carrinho.findIndex((produto) => {
-        return produto.idProduto == id;
-      });
     },
 
     posicaoFavorito(id) {
@@ -247,18 +233,21 @@ export default {
         return produto.idProduto == id;
       });
     },
-    actionFavorito(event){
-      if(event.action == 1 )
-        this.adicionarFavorito(event.produto_id);
-      else
-        this.removerFavorito(event.produto_id);
+    actionFavorito(event) {
+      if (event.action == 1) this.adicionarFavorito(event.produto_id);
+      else this.removerFavorito(event.produto_id);
     },
-    actionCarrinho(event){
-      if(event.action == 1 )
-        this.adicionarCarrinho(event.produto);
-      else
-        this.removerCarrinho(event.produto.id);
+
+    actionCarrinho(event) {
+      if (event.action == 1) {
+        this.$store.commit("setCarrinho", event.produto);
+        this.notificacao(`${event.produto.title} added to cart.`);
+      } else {
+        this.$store.commit("removeCarrinho", event.produto);
+        this.notificacao(`${event.produto.title} removed.`);
+      }
     },
+
     removerFavorito(id) {
       let position = this.posicaoFavorito(id);
       if (position > -1) this.favorito.splice(position, 1);
@@ -269,15 +258,6 @@ export default {
       setTimeout(() => {
         this.alertaAtivo = false;
       }, 2000);
-    },
-    adicionarCarrinho(produto) {
-      this.carrinho.push({
-        idProduto: produto.id,
-        nome: produto.title,
-        preco: produto.price,
-        url: produto.image,
-      });
-      this.notificacao(`${produto.title} added to cart.`);
     },
     adicionarFavorito(id) {
       this.favorito.push({
@@ -391,11 +371,9 @@ export default {
 
 /* BOTOES */
 
-
 .input-group {
   flex-wrap: nowrap;
 }
-
 
 @media screen and (max-width: 600px) {
   .mobile-search {
