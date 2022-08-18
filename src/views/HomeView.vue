@@ -220,7 +220,6 @@ export default {
         .then((r) => r.json())
         .then((r) => {
           this.produtos = r;
-          console.log(this.produtos);
           this.show = false;
         });
     },
@@ -255,7 +254,6 @@ export default {
         this.removerFavorito(event.produto_id);
     },
     actionCarrinho(event){
-      console.log(event);
       if(event.action == 1 )
         this.adicionarCarrinho(event.produto);
       else
