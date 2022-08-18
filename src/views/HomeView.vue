@@ -115,56 +115,11 @@
               :key="index"
               class="card"
             >
-              <div class="card-body">
-                <div class="h2 mb-0">
-                  <b-icon
-                    v-if="produtoFavorito(produto.id)"
-                    icon="heart-fill"
-                    class="rounded p-2 icon-heart-bg action-produto"
-                    variant="danger"
-                    @click="removerFavorito(produto.id)"
-                  />
-                  <b-icon
-                    v-else
-                    icon="suit-heart"
-                    class="rounded p-2 icon-unheart-bg action-produto"
-                    @click="adicionarFavorito(produto.id)"
-                  />
-                </div>
-
-                <div class="card-container-img">
-                  <img :src="produto.image" alt="Card image cap" />
-                </div>
-
-                <div class="card-container-titulo">
-                  <p class="overflow-hidden">{{ produto.title }}</p>
-                </div>
-
-                <div
-                  class="card-container-titulo d-flex justify-content-between"
-                >
-                  <div class="d-flex flex-column">
-                    <span>Price:</span>
-                    <strong>{{ produto.price | numeroPreco }}</strong>
-                  </div>
-                  <div class="h2 mb-0">
-                    <b-iconstack
-                      v-if="!produtoCarrinho(produto.id)"
-                      @click="adicionarCarrinho(produto)"
-                      class="action-produto icon-plus-bg"
-                    >
-                      <b-icon stacked icon="plus"></b-icon>
-                    </b-iconstack>
-                    <b-iconstack
-                      v-else
-                      @click="removerCarrinho(produto.id)"
-                      class="action-produto icon-check-bg"
-                    >
-                      <b-icon stacked icon="check"></b-icon>
-                    </b-iconstack>
-                  </div>
-                </div>
-              </div>
+            <CardProdutos :produto="produto" 
+            :isFavorito="produtoFavorito(produto.id)" 
+            :onCarrinho="produtoCarrinho(produto.id)" 
+            @tFavorito="actionFavorito($event)"
+            @tCarrinho="actionCarrinho($event)"/>
             </div>
           </div>
         </b-overlay>
@@ -178,11 +133,13 @@
 
 <script>
 import NavBarMarket from "@/components/NavBarMarket.vue";
+import CardProdutos from "@/components/CardProdutos.vue";
 
 export default {
   name: "HomeView",
   components: {
     NavBarMarket,
+    CardProdutos
   },
   data() {
     return {
@@ -243,14 +200,16 @@ export default {
       this.notificacao("🎉 Products purchased successfully 🎉");
     },
     produtoCarrinho(id) {
-      return this.carrinho.find((produto) => {
-        return produto.idProduto == id;
+      let aux = this.carrinho.find((carrinho) => {
+        return carrinho.idProduto == id;
       });
+      return aux ? true : false;
     },
     produtoFavorito(id) {
-      return this.favorito.find((favorito) => {
+      let aux = this.favorito.find((favorito) => {
         return favorito.idProduto == id;
       });
+      return aux ? true : false;
     },
     getProdutos() {
       this.show = true;
@@ -280,11 +239,24 @@ export default {
         return produto.idProduto == id;
       });
     },
-    //retorna posicao que esta no carrinho
+
     posicaoFavorito(id) {
       return this.favorito.findIndex((produto) => {
         return produto.idProduto == id;
       });
+    },
+    actionFavorito(event){
+      if(event.action == 1 )
+        this.adicionarFavorito(event.produto_id);
+      else
+        this.removerFavorito(event.produto_id);
+    },
+    actionCarrinho(event){
+      console.log(event);
+      if(event.action == 1 )
+        this.adicionarCarrinho(event.produto);
+      else
+        this.removerCarrinho(event.produto.id);
     },
     removerFavorito(id) {
       let position = this.posicaoFavorito(id);
@@ -408,33 +380,12 @@ export default {
 
 .card-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 1rem;
 }
 
 .card {
   border-radius: 35px;
-}
-.card-body {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 5px;
-}
-
-.card-container-img {
-  height: 150px;
-}
-.card-container-img img {
-  height: 100%;
-  width: 100%;
-  object-fit: contain;
-}
-
-.card-container-titulo p {
-  height: 73px;
-  font-size: 15px;
-  font-weight: 500;
 }
 
 /* BOTOES */
@@ -446,24 +397,6 @@ export default {
   flex-wrap: nowrap;
 }
 
-/* ICONS */
-.icon-check-bg {
-  border-radius: 10px;
-  background: rgb(58, 255, 84);
-  color: #ffffff;
-}
-
-.icon-unheart-bg {
-  background: rgb(230, 230, 230);
-}
-.icon-heart-bg {
-  background: rgb(255, 192, 192);
-}
-
-.icon-plus-bg {
-  border-radius: 10px;
-  background: rgb(192, 192, 192);
-}
 
 @media screen and (max-width: 600px) {
   .mobile-search {
